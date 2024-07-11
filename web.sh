@@ -4,8 +4,9 @@
 
 # Fonction pour afficher l'aide
 usage() {
-    echo "Usage: $0 [-p port] [file]"
+    echo "Usage: $0 [-p port] [-h] [file]"
     echo "  -p port    Choisissez le port pour le serveur web (par défaut: 8080)"
+    echo "  -h         Afficher cette aide"
     echo "  [file]     Fichier à servir (par défaut: répertoire courant)"
     exit 1
 }
@@ -14,10 +15,13 @@ usage() {
 port=8080
 
 # Analyser les options de la ligne de commande
-while getopts "p:" opt; do
+while getopts "p:h" opt; do
     case ${opt} in
         p )
             port=${OPTARG}
+            ;;
+        h )
+            usage
             ;;
         \? )
             usage
