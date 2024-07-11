@@ -14,7 +14,7 @@
 3. Déplacez le script dans un répertoire inclus dans votre `PATH` pour pouvoir l'exécuter comme une commande. Par exemple :
     ```bash
     mkdir -p ~/bin
-    mv web.sh ~/bin/start_server
+    mv web.sh ~/bin/web
     ```
 
     Assurez-vous que `~/bin` est dans votre `PATH`. Ajoutez la ligne suivante à votre `~/.bashrc` ou `~/.profile` :
@@ -34,7 +34,7 @@ Le script peut être utilisé pour démarrer un serveur web sur un port spécifi
 ### Syntaxe
 
 ```bash
-start_server [-p port] [-h] [file]
+web [-p port] [-h] [file]
 ```
 
 ### Options
@@ -47,22 +47,22 @@ start_server [-p port] [-h] [file]
 
 - Démarrer le serveur sur le port par défaut (8080) et servir le répertoire courant :
     ```bash
-    start_server
+    web
     ```
 
 - Démarrer le serveur sur le port 8000 et servir le répertoire courant :
     ```bash
-    start_server -p 8000
+    web -p 8000
     ```
 
 - Démarrer le serveur sur le port 8000 et servir un fichier spécifique :
     ```bash
-    start_server -p 8000 index.html
+    web -p 8000 index.html
     ```
 
 - Afficher l'aide :
     ```bash
-    start_server -h
+    web -h
     ```
 
 ## Prérequis
