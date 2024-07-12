@@ -1,20 +1,20 @@
 #!/bin/bash
 
-# Script pour démarrer un serveur web avec Python3
+# Script to start a web server with Python3
 
-# Fonction pour afficher l'aide
+# Function to display help
 usage() {
     echo "Usage: $0 [-p port] [-h] [file]"
-    echo "  -p port    Choisissez le port pour le serveur web (par défaut: 8080)"
-    echo "  -h         Afficher cette aide"
-    echo "  [file]     Fichier à servir (par défaut: répertoire courant)"
+    echo "  -p port    Choose the port for the web server (default: 8080)"
+    echo "  -h         Display this help"
+    echo "  [file]     File to serve (default: current directory)"
     exit 1
 }
 
-# Port par défaut
+# Default port
 port=8080
 
-# Analyser les options de la ligne de commande
+# Parse command line options
 while getopts "p:h" opt; do
     case ${opt} in
         p )
@@ -30,36 +30,52 @@ while getopts "p:h" opt; do
 done
 shift $((OPTIND -1))
 
-# Fichier ou répertoire à servir
+# File or directory to serve
 target=${1:-$(pwd)}
 
-# Vérifiez si Python 3 est installé
+# Check if Python 3 is installed
 if ! command -v python3 &> /dev/null
 then
-    echo "Python3 n'est pas installé. Veuillez installer Python3 et réessayer."
+    echo "Python3 is not installed. Please install Python3 and try again."
     exit 1
 fi
 
-# Vérifiez si la cible existe
+# Check if the target exists
 if [ ! -e "$target" ]; then
-    echo "Le fichier ou répertoire spécifié n'existe pas: $target"
+    echo "The specified file or directory does not exist: $target"
     exit 1
 fi
 
-# Démarrez le serveur web sur le port spécifié
-echo "Démarrage du serveur web sur le port ${port} en servant $target..."
+# Start the web server on the specified port
+echo "Starting web server on port ${port} serving $target..."
 if [ -d "$target" ]; then
-    # Si la cible est un répertoire, démarrez le serveur depuis ce répertoire
+    # If the target is a directory, start the server from that directory
     cd "$target"
     python3 -m http.server ${port}
 else
-    # Si la cible est un fichier, démarrez le serveur et affichez le fichier
-    python3 -m http.server ${port} &
-    server_pid=$!
-    sleep 1  # Attendez un moment pour démarrer le serveur
-    xdg-open "http://localhost:${port}/${target}"
-    wait $server_pid
+    # If the target is a file, create a temporary directory to serve the file with download headers
+    tempdir=$(mktemp -d)
+    cp "$target" "$tempdir/"
+    cd "$tempdir"
+    
+    # Create a simple HTTP server to serve the file with the correct headers
+    python3 -c "
+import http.server
+import socketserver
+
+class CustomHandler(http.server.SimpleHTTPRequestHandler):
+    def end_headers(self):
+        self.send_header('Content-Disposition', 'attachment; filename=$(basename "$target")')
+        super().end_headers()
+
+Handler = CustomHandler
+httpd = socketserver.TCPServer(('', ${port}), Handler)
+print('Serving file for download on port ${port}...')
+httpd.serve_forever()
+"
+    # Clean up the temporary directory after the server stops
+    rm -rf "$tempdir"
 fi
 
-# Affichez un message lorsque le serveur est arrêté
-echo "Le serveur web a été arrêté."
+# Display a message when the server stops
+echo "The web server has been stopped."
